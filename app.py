@@ -1,9 +1,9 @@
-from flask import Flask,render_template,session,url_for
+from flask import Flask,render_template,session,url_for,redirect
 from wtforms import TextField,SubmitField
 from flask_wtf import FlaskForm
 import numpy as np
-from tensorflow.keras.models import load_model
 import joblib
+import tensorflow
 
 def return_prediction(model,scaler,sample_json):
   # pull out the data
@@ -17,14 +17,15 @@ def return_prediction(model,scaler,sample_json):
   flower = scaler.transform(flower)
 
   # make a prediction
-  class_index = model.predict_classes(flower)[0]
+  predict_x = model.predict(flower) 
+  class_index = np.argmax(predict_x,axis=1)
   classes = np.array(['setosa', 'versicolor', 'virginica'])
   return classes[class_index]
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecretkey'
 
-class FlowerForm(flaskForm):
+class FlowerForm(FlaskForm):
     sep_len = TextField("Sepal Length")
     sep_wid = TextField("Sepal Width")
     pet_len = TextField("Petal Length")
@@ -37,7 +38,7 @@ def index():
     form = FlowerForm()
     
     # if it's a submission, redirect to the prediction page
-    if form.validate_on_submit():
+    if form.is_submitted() and form.validate():
         session['sep_len'] = form.sep_len.data
         session['sep_wid'] = form.sep_wid.data
         session['pet_len'] = form.pet_len.data
@@ -47,11 +48,12 @@ def index():
     # if it's normal, show them the home page
     return render_template('home.html',form=form)
 
-flower_model = load_model('final_iris_model.h5')
+flower_model = tensorflow.keras.models.load_model('final_iris_model.h5', compile=False)
+flower_model.compile(optimizer='adam',loss='categorical_crossentropy',metrics=['accuracy'])
 flower_scaler = joblib.load('iris_scaler.pkl')
 
 # prediction page
-@app.route('/prediction',methods=['POST'])
+@app.route('/prediction')
 def prediction():
     # parse the form inputs
     content = {}
