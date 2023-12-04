@@ -12,6 +12,10 @@ You can view the deployed page here:
 
 https://moses-ian-iris-b0b12bef0536.herokuapp.com/
 
+I'm not sure how to transfer Google Colab's Notebooks to Github. So you can read the code to generate the AI here:
+
+https://colab.research.google.com/drive/1kz9YRkvtmwDaTU6-lHGW5X7JCkBLb2jB?usp=sharing
+
 ## Usage
 
 Enter values of the sepal and petal legths and widths you find, and the AI will tell you what species of flower it is!
